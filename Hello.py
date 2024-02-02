@@ -149,8 +149,7 @@ questions_and_options = [
             3: "watch others play the game before joining in.",
             4: "read the instructions."
         }
-    }
-]
+    }]
 
 # Learning styles mapping
 learning_styles = {
@@ -160,6 +159,12 @@ learning_styles = {
     4: "Read/Write"
 }
 
+
+            # Display a custom message based on the highest and second-highest learning styles
+            # ... (your code for custom message based on the top two results)
+
+# ... (previous code)
+# Function to calculate the learning style
 # Function to calculate the learning style
 def calculate_learning_style(answers):
     results = {"Visual": 0, "Aural": 0, "Tactile/Kinesthetic": 0, "Read/Write": 0}
@@ -169,52 +174,57 @@ def calculate_learning_style(answers):
             results[learning_styles[answer]] += 1
     return results
 
-# Initialize session state
+# ... (your calculate_learning_style function here)
+
+# Initialize session state for tracking current question and answers
+if 'current_question' not in st.session_state:
+    st.session_state.current_question = 0
 if 'answers' not in st.session_state:
     st.session_state.answers = [0] * len(questions_and_options)
 
 # Title of the app
 st.title('Learning Style Test')
 
-# Display questions with their specific options
-for i, q_and_o in enumerate(questions_and_options):
-    question = q_and_o["question"]
-    options = q_and_o["options"]
-    st.session_state.answers[i] = st.radio(
+# Display only the current question
+current_q_and_o = questions_and_options[st.session_state.current_question]
+question = current_q_and_o["question"]
+options = current_q_and_o["options"]
+
+# Use a form to ensure answers are submitted before moving to the next question
+with st.form(key=f'question_{st.session_state.current_question}'):
+    st.session_state.answers[st.session_state.current_question] = st.radio(
         question, 
         list(options.keys()), 
-        format_func=lambda x: options[x], 
-        key=f"question_{i+1}"
+        format_func=lambda x: options[x]
     )
+    submitted = st.form_submit_button('Next')
 
-# ... (previous code)
+    if submitted:
+        if st.session_state.current_question < len(questions_and_options) - 1:
+            # Move to the next question
+            st.session_state.current_question += 1
+        else:
+            # Calculate and display the results after the last question
+            result = calculate_learning_style(st.session_state.answers)
+            st.subheader("Your Learning Style Preferences:")
+            for style, count in result.items():
+                st.write(f"{style}: {count}")
 
-# Submit button
-if st.button('Submit'):
-    # Calculate learning style
-    result = calculate_learning_style(st.session_state.answers)
+            # Sort the learning styles by count in descending order
+            sorted_styles = sorted(result.items(), key=lambda x: x[1], reverse=True)
 
-    # Display the learning style preferences
-    st.subheader("Your Learning Style Preferences:")
-    for style, count in result.items():
-        st.write(f"{style}: {count}")
-    
-    # Sort the learning styles by count in descending order
-    sorted_styles = sorted(result.items(), key=lambda x: x[1], reverse=True)
+            # Extract the top two learning styles
+            top_style = sorted_styles[0]
+            second_top_style = sorted_styles[1]
 
-    # Extract the top two learning styles
-    top_style = sorted_styles[0]
-    second_top_style = sorted_styles[1]
+            # Display a custom message based on the highest and second-highest learning styles
+            message = f"You have the highest count in {top_style[0]} learning ({top_style[1]} counts) and the second-highest in {second_top_style[0]} learning ({second_top_style[1]} counts)."
+            
+            # You can add more specific advice or career guidance based on top_style[0] and second_top_style[0]
+            # For example:
+            if top_style[0] == "Visual" and second_top_style[0] == "Aural":
+                message += " This combination is suitable for careers that involve visual and auditory skills, such as graphic design or music production."
+            # Add more conditions as needed for other combinations
 
-    # Display a custom message based on the highest and second-highest learning styles
-    message = f"You have the highest count in {top_style[0]} learning ({top_style[1]} counts) and the second-highest in {second_top_style[0]} learning ({second_top_style[1]} counts)."
-    
-    # You can add more specific advice or career guidance based on top_style[0] and second_top_style[0]
-    # For example:
-    if top_style[0] == "Visual" and second_top_style[0] == "Aural":
-        message += " This combination is suitable for careers that involve visual and auditory skills, such as graphic design or music production."
-    # Add more conditions as needed for other combinations
-
-    st.subheader("Custom Career Advice Based on Learning Style:")
-    st.write(message)
-    
+            st.subheader("Custom Career Advice Based on Learning Style:")
+            st.write(message)
