@@ -176,11 +176,9 @@ def calculate_learning_style(answers):
 
 # ... (your calculate_learning_style function here)
 
-# Initialize session state for tracking current question and answers
-if 'current_question' not in st.session_state:
-    st.session_state.current_question = 0
-if 'answers' not in st.session_state:
-    st.session_state.answers = [0] * len(questions_and_options)
+# Initialize session state
+st.session_state.setdefault('current_question', 0)
+st.session_state.setdefault('answers', [0] * len(questions))
 
 # Title of the app
 st.title('Learning Style Test')
